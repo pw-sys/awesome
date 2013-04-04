@@ -4,25 +4,26 @@
 
 theme = {}
 
-theme.font          = "sans 8"
+theme.font          = "DejaVu Mono 6 "
 
 theme.bg_normal     = "#222222"
 theme.bg_focus      = "#535d6c"
 theme.bg_urgent     = "#ff0000"
 theme.bg_minimize   = "#444444"
+theme.bg_systray    = theme.bg_normal
 
 theme.fg_normal     = "#aaaaaa"
 theme.fg_focus      = "#ffffff"
 theme.fg_urgent     = "#ffffff"
 theme.fg_minimize   = "#ffffff"
 
-theme.border_width  = "1"
+theme.border_width  = 1
 theme.border_normal = "#000000"
 theme.border_focus  = "#535d6c"
 theme.border_marked = "#91231c"
 
 -- There are other variable sets
--- overriding the myOwn one when
+-- overriding the default one when
 -- defined, the sets are:
 -- [taglist|tasklist]_[bg|fg]_[focus|urgent]
 -- titlebar_[bg|fg]_[normal|focus]
@@ -35,14 +36,12 @@ theme.border_marked = "#91231c"
 theme.taglist_squares_sel   = "/home/djluciver/.config/awesome/themes/myOwn/taglist/squarefw.png"
 theme.taglist_squares_unsel = "/home/djluciver/.config/awesome/themes/myOwn/taglist/squarew.png"
 
-theme.tasklist_floating_icon = "/home/djluciver/.config/awesome/themes/myOwn/tasklist/floatingw.png"
-
 -- Variables set for theming the menu:
 -- menu_[bg|fg]_[normal|focus]
 -- menu_[border_color|border_width]
 theme.menu_submenu_icon = "/home/djluciver/.config/awesome/themes/myOwn/submenu.png"
-theme.menu_height = "15"
-theme.menu_width  = "100"
+theme.menu_height = 15
+theme.menu_width  = 100
 
 -- You can add as many variables as
 -- you wish and access them by using
@@ -73,8 +72,7 @@ theme.titlebar_maximized_button_focus_inactive  = "/home/djluciver/.config/aweso
 theme.titlebar_maximized_button_normal_active = "/home/djluciver/.config/awesome/themes/myOwn/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active  = "/home/djluciver/.config/awesome/themes/myOwn/titlebar/maximized_focus_active.png"
 
--- You can use your own command to set your wallpaper
-theme.wallpaper_cmd = { "awsetbg -a /home/djluciver/.config/awesome/themes/myOwn/background.png" }
+theme.wallpaper = "/home/djluciver/.config/awesome/themes/myOwn/background.png"
 
 -- You can use your own layout icons like this:
 theme.layout_fairh = "/home/djluciver/.config/awesome/themes/myOwn/layouts/fairhw.png"
@@ -90,7 +88,11 @@ theme.layout_tiletop = "/home/djluciver/.config/awesome/themes/myOwn/layouts/til
 theme.layout_spiral  = "/home/djluciver/.config/awesome/themes/myOwn/layouts/spiralw.png"
 theme.layout_dwindle = "/home/djluciver/.config/awesome/themes/myOwn/layouts/dwindlew.png"
 
-theme.awesome_icon = "/home/djluciver/.config/awesome/icons/awesome16.png"
+theme.awesome_icon = "/home/djluciver/.config/awesome/themes/myOwn/arch32.png"
+
+-- Define the icon theme for application icons. If not set then the icons 
+-- from /usr/share/icons and /usr/share/icons/hicolor will be used.
+theme.icon_theme = nil
 
 return theme
--- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=80
+-- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80

@@ -1,17 +1,38 @@
 -- Standard awesome library
-require("awful")
-require("awful.autofocus")
-require("awful.rules")
+local gears = require("gears")
+awful = require("awful")
+awful.autofocus = require("awful.autofocus")
+awful.rules = require("awful.rules")
 -- Theme handling library
-require("beautiful")
-require("naughty")
-require("vicious")
-require("bashets")
+beautiful = require("beautiful")
+naughty = require("naughty")
+vicious = require("vicious")
+wibox = require("wibox")
+-- Notification library
+local naughty = require("naughty")
+local menubar = require("menubar")
+--blingbling = require("blingbling")
+
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
 beautiful.init("/home/djluciver/.config/awesome/themes/myOwn/theme.lua")
 
+--Colorarray
+color = {}
+for val = 0, 100, 1 do
+    local red, green
+
+    if (val <= 50) then
+        red = (255 * val) / 50
+        green = 255
+    else
+        red = 255
+        green = 255 - (255 * (val - 50)) / (50)
+    end
+
+    color[val] = string.format("#%02x%02x00", red, green)
+end
 
 -- This is used later as the default terminal and editor to run.
 terminal = "terminal"
@@ -50,7 +71,7 @@ tags = {
 		layouts[2],
 		layouts[10],
 		layouts[2],
-		layouts[1],
+		layouts[3],
 		layouts[3],
 		layouts[1],
 		layouts[1],
@@ -58,11 +79,11 @@ tags = {
 	},
 	name = {
 		"c",
-		"2",
+		"ec",
 		"ff",
 		"tb",
-		"pdf",
-		"pid",
+		"5pdf",
+		"6pi",
 		"7",
 		"8",
 		"9"
@@ -71,6 +92,14 @@ tags = {
 for s = 1, screen.count() do
     -- Each screen has its own tag table.
     tags[s] = awful.tag(tags.name, s, tags.layout)
+end
+-- }}}
+
+-- {{{ Wallpaper
+if beautiful.wallpaper then
+    for s = 1, screen.count() do
+            gears.wallpaper.maximized(beautiful.wallpaper, s, true)
+    end
 end
 -- }}}
 
@@ -89,32 +118,33 @@ mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesom
                                   }
                         })
 
-mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
+mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
                                      menu = mymainmenu })
 -- }}}
 -- {{{ Separators
 
 --Two separators to make more beautifull the final interface :)
-spacer = widget({ type = "textbox" })
-separator = widget({ type = "textbox" })
-spacer.text = " "
-separator.text = "|"
+spacer = wibox.widget.textbox()
+separator = wibox.widget.textbox()
+spacer:set_markup(" ")
+separator:set_markup("|")
+test = wibox.widget.textbox()
+test:set_markup("test")
+
 --}}}
 
--- {{{ Wibox
-
-
+-- {{{ Widget Wibox
 
 -- Create a batwidget (status chrg%) ###############################################################
-baticon = widget({ type = "imagebox" })
-baticon.image = image("/home/djluciver/.config/awesome/icons/cc/white/png/battery_icon\&16.png")
+baticon = wibox.widget.imagebox() 
+baticon:set_image("/home/djluciver/.config/awesome/icons/cc/white/png/battery_icon&16.png")
 -- Initialize widget
-batwidget = widget({ type = "textbox" })
+batwidget = wibox.widget.textbox()
 -- Register widget
 --Displays a plus or minus (charging or not){$1}, then the percentage of charge {$2}, and at the end
 --the time to finish the charge or discharge {$3}.
 --Maybe you will have to change the BAT0 for BAT1, or BAT2... Try :)
-vicious.register(batwidget, vicious.widgets.bat, "$1$2%$3", 30, "BAT0")
+vicious.register(batwidget, vicious.widgets.bat, " $1 $2% $3", 30, "BAT0",71)
 
 
 -- Create a cpuwidget (usage%) #####################################################################
@@ -123,49 +153,63 @@ vicious.register(batwidget, vicious.widgets.bat, "$1$2%$3", 30, "BAT0")
 -- The vicious.widgets.cpu return three variables, $1 is the percentage total usage.
 -- $2 is the percentage of the first CPU usage, and $3 is the percentage of the second CPU usage.
 -- I just use the first one, you can put all you want.
- cpuicon = widget({ type = "imagebox" })
- cpuicon.image = image("/home/djluciver/.config/awesome/icons/cc/white/png/dashboard_icon\&16.png")
+ cpuicon =wibox.widget.imagebox() 
+ cpuicon:set_image("/home/djluciver/.config/awesome/icons/cc/white/png/dashboard_icon&16.png")
 -- Initialize widget
- cpuwidget = widget({ type = "textbox" })
+ cpuwidget = wibox.widget.textbox()
 -- Register widget
- vicious.register(cpuwidget, vicious.widgets.cpu, "$1%", 2)
+ --vicious.register(cpuwidget, vicious.widgets.cpu, "$1% $2 $3 $4 $5", 3)
 -- Initialize thermal widget 
- thermalwidget  = widget({ type = "textbox" })
- vicious.register(thermalwidget, vicious.widgets.thermal, " $1°C", 5, { "coretemp.0", "core"} )
+ thermalwidget  = wibox.widget.textbox()
+ vicious.register(thermalwidget, vicious.widgets.thermal, " $1°C", 5, { "coretemp.0", "core"} ,7)
 -- Init fan widget
- fanwidget = widget({ type = "textbox" }) 
+ fanwidget = wibox.widget.textbox() 
 -- bashets.register("fan.sh", {widget = fanwidget, separator = " ", update_time=1})
+ vicious.register(fanwidget, vicious.widgets.fan, " $1", 13)
+ rpmlabel = wibox.widget.textbox()
+ rpmlabel:set_markup("rpm")
 
+
+-- CPU Graph widget ###############################################################################
+-- Initialize widget
+cpuwidgetgraph1 = awful.widget.graph()
+-- Graph properties
+cpuwidgetgraph1:set_width(25)
+cpuwidgetgraph1:set_background_color("#494B4F")
+cpuwidgetgraph1:set_color("#FF5656")
+-- cpuwidgetgraph1:set_gradient_colors({ "#FF5656", "#88A175", "#AECF96" })
+-- Register widget
+vicious.register(cpuwidgetgraph1, vicious.widgets.cpu, "$2",3)
 -- Create a clock widget ###########################################################################
 
-clockicon = widget({ type = "imagebox" })
-clockicon.image = image("/home/djluciver/.config/awesome/icons/cc/white/png/clock_icon\&16.png")
+clockicon = wibox.widget.imagebox()
+clockicon:set_image("/home/djluciver/.config/awesome/icons/cc/white/png/clock_icon&16.png")
 
 
 -- My volume widget ################################################################################
-volumewidget = widget({ type = "textbox" })
-vicious.register(volumewidget, vicious.widgets.volume, " $1% $2 ", 1, "Master")
+volumewidget = wibox.widget.textbox()
+vicious.register(volumewidget, vicious.widgets.volume, " $1% $2 ", 1, "Master",67)
 
 volumewidget:buttons(awful.util.table.join(
     awful.button({ }, 3, function () awful.util.spawn("terminal -e alsamixer", true) end), --right click to open alsamixer in a xterm
     awful.button({ }, 1, function () awful.util.spawn("amixer -q set Master toggle", false) end) --left click to mute/umute (I have the keybind x86vol... to do it too)
 ))
 
-volicon = widget({ type = "imagebox" })
+volicon = wibox.widget.imagebox()
 vicious.register(volicon, vicious.widgets.volume,
 	function (widget, args)
 		if args[1] == 0 or args[2] == '♩' then
 --			volicon.image=image(beautiful.widget_vol_mute)
-			volicon.image=image("/home/djluciver/.config/awesome/icons/cc/white/png/sound_mute_icon\&16.png")
+			volicon:set_image("/home/djluciver/.config/awesome/icons/cc/white/png/sound_mute_icon&16.png")
 		elseif args[1] > 50 then
 --			volicon.image=image(beautiful.widget_vol_hi)
-			volicon.image=image("/home/djluciver/.config/awesome/icons/cc/white/png/sound_high_icon\&16.png")
+			volicon:set_image("/home/djluciver/.config/awesome/icons/cc/white/png/sound_high_icon&16.png")
 		else
 --			volicon.image=image(beautiful.widget_vol_low)
-			volicon.image=image("/home/djluciver/.config/awesome/icons/cc/white/png/sound_low_icon\&16.png")
+			volicon:set_image("/home/djluciver/.config/awesome/icons/cc/white/png/sound_low_icon&16.png")
 		end
 	end,
-1, "Master")
+1, "Master",17)
 
 --To volume_up and Volume_down I have two keybindings: x86vol....
 
@@ -174,10 +218,10 @@ vicious.register(volicon, vicious.widgets.volume,
  -- Wifi widget!!!!
  -- It displays the SSID of the net you are connected ( ${ssid} ), the percentage of connectivity ( ${link} )
  -- and the rate ( ${rate} )
- wifiicon = widget({ type = "imagebox" })
- wifiicon.image = image("/home/djluciver/.config/awesome/icons/cc/white/png/wireless_signal_icon\&16.png")
+ wifiicon = wibox.widget.imagebox()
+ wifiicon:set_image("/home/djluciver/.config/awesome/icons/cc/white/png/wireless_signal_icon&16.png")
  -- Initialize widget
- wifiwidget = widget({ type = "textbox" })
+ wifiwidget = wibox.widget.textbox()
  -- Register widget
  vicious.register(wifiwidget, vicious.widgets.wifi, " ${ssid} ${linp}% ${rate}Mbps", 5, "wlan0")
 
@@ -190,24 +234,37 @@ vicious.register(volicon, vicious.widgets.volume,
 
 --Widget who print the kb/s you are downloading and uploading :)
 --Just with wlan, with eht you will have to change it ;)
-dnicon = widget({ type = "imagebox" })
-upicon = widget({ type = "imagebox" })
+dnicon = wibox.widget.imagebox()
+upicon = wibox.widget.imagebox()
 --dnicon.image = image("/home/rock/.config/awesome/icons/down.png")
-upicon.image = image("/home/djluciver/.config/awesome/icons/cc/white/png/balance_icon\&16.png")
+upicon:set_image("/home/djluciver/.config/awesome/icons/cc/white/png/balance_icon&16.png")
 -- Initialize widget
-netwidget = widget({ type = "textbox" })
+netwidget = wibox.widget.textbox()
 -- Register widget
-vicious.register(netwidget, vicious.widgets.net, "↓${wlan0 down_mb} ↑${wlan0 up_mb}Mb/s", 1)
+vicious.register(netwidget, vicious.widgets.net, "↓${wlan0 down_kb} ↑${wlan0 up_kb}kb/s", 5)
+
+
+
+-- DOMEs #########################################################################################
+
+-- Create a CPU Widget
+cpuwidgetd = wibox.widget.textbox()
+vicious.register(cpuwidgetd, vicious.widgets.cpu, 
+	function (widget, args)
+		local out = '['
+		for i = 1, 5, 1 do
+			out = out .. string.format("<span color=\"%s\">%02d</span>|", color[args[i]], args[i])
+		 end
+ 		 return string.sub(out, 0, string.len(out) - 1) .. '] '
+	end, 7)
+
 
 
 -- start all bashets          #####################################################################
 -- bashets.start()
 
 -- Create a textclock widget
-mytextclock = awful.widget.textclock({ align = "right" })
-
--- Create a systray
-mysystray = widget({ type = "systray" })
+mytextclock = awful.widget.textclock()
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -250,7 +307,7 @@ mytasklist.buttons = awful.util.table.join(
 
 for s = 1, screen.count() do
     -- Create a promptbox for each screen
-    mypromptbox[s] = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright })
+    mypromptbox[s] = awful.widget.prompt()
     -- Create an imagebox widget which will contains an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
     mylayoutbox[s] = awful.widget.layoutbox(s)
@@ -260,15 +317,63 @@ for s = 1, screen.count() do
                            awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
                            awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
     -- Create a taglist widget
-    mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.label.all, mytaglist.buttons)
+    mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
+    -- mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.label.all, mytaglist.buttons)
 
     -- Create a tasklist widget
+    mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
+    --[[
     mytasklist[s] = awful.widget.tasklist(function(c)
                                               return awful.widget.tasklist.label.currenttags(c, s)
                                           end, mytasklist.buttons)
+					  --]]
 
     -- Create the wibox
+
     mywibox[s] = awful.wibox({ position = "top", screen = s })
+    -- Widgets that are aligned to the left
+    local left_layout = wibox.layout.fixed.horizontal()
+    left_layout:add(mylauncher)
+    left_layout:add(mytaglist[s])
+    left_layout:add(mypromptbox[s])
+
+    -- Widgets that are aligned to the right
+    local right_layout = wibox.layout.fixed.horizontal()
+    if s == 1 then right_layout:add(wibox.widget.systray()) end
+    
+    right_layout:add(wifiicon)
+    right_layout:add(wifiwidget)
+    right_layout:add(spacer)
+    right_layout:add(upicon)
+    right_layout:add(netwidget)
+    right_layout:add(spacer)
+    right_layout:add(cpuicon)
+    right_layout:add(spacer)
+    right_layout:add(cpuwidgetgraph1)
+    right_layout:add(spacer)
+    right_layout:add(cpuwidgetd)
+    --right_layout:add(cpuwidget)
+    right_layout:add(thermalwidget)
+    right_layout:add(fanwidget)
+    right_layout:add(rpmlabel)
+    right_layout:add(spacer)
+    right_layout:add(baticon)
+    right_layout:add(batwidget)
+    right_layout:add(spacer)
+    right_layout:add(volicon)
+    right_layout:add(volumewidget)
+    right_layout:add(clockicon)
+    right_layout:add(mytextclock)
+    right_layout:add(mylayoutbox[s])
+
+    -- Now bring it all together (with the tasklist in the middle)
+    local layout = wibox.layout.align.horizontal()
+    layout:set_left(left_layout)
+    layout:set_middle(mytasklist[s])
+    layout:set_right(right_layout)
+
+    mywibox[s]:set_widget(layout)
+    --[[
     mywibox[s].widgets = {
         {
             mylauncher,
@@ -279,7 +384,7 @@ for s = 1, screen.count() do
         mylayoutbox[s],
 	mytextclock, clockicon,
 --eigene widgets
-	fanwidget,thermalwidget,cpuwidget, spacer,  cpuicon,  --cpu widget
+	rpmlabel,fanwidget,thermalwidget,cpuwidget, spacer,  cpuicon,  --cpu widget
 	batwidget, baticon,  --Battery widget :)
 	volumewidget, volicon, spacer,
 	netwidget, upicon, spacer,
@@ -290,6 +395,7 @@ for s = 1, screen.count() do
         mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
    }
+   --]]
 end
 -- }}}
 
@@ -475,12 +581,12 @@ awful.rules.rules = {
 
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
-client.add_signal("manage", function (c, startup)
+client.connect_signal("manage", function (c, startup)
     -- Add a titlebar
     -- awful.titlebar.add(c, { modkey = modkey })
 
     -- Enable sloppy focus
-    c:add_signal("mouse::enter", function(c)
+    c:connect_signal("mouse::enter", function(c)
         if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
             and awful.client.focus.filter(c) then
             client.focus = c
@@ -500,8 +606,8 @@ client.add_signal("manage", function (c, startup)
     end
 end)
 
-client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
+client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
 
 -- {{{ Autostart
