@@ -68,7 +68,7 @@ layouts =
 tags = {
 	layout= {
 		layouts[1],
-		layouts[2],
+		layouts[10],
 		layouts[10],
 		layouts[2],
 		layouts[3],
@@ -457,8 +457,16 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
     
     -- Change Keyboard backlight
-    awful.key({            }, "XF86KbdBrightnessDown", function () awful.util.spawn("kbacklight down") end),
-    awful.key({            }, "XF86KbdBrightnessUp", function () awful.util.spawn("kbacklight up") end),
+    awful.key({            }, "XF86KbdBrightnessDown", function () awful.util.spawn_with_shell("sudo kbacklight $((`kbacklight`-10))") end),
+    awful.key({            }, "XF86KbdBrightnessUp", function () awful.util.spawn_with_shell("sudo kbacklight $((`kbacklight`+10))") end),
+    
+    
+    --awful.key({            }, "XF86MonBrightnessDown", function () awful.util.spawn_with_shell("sudo backlight $((`backlight`-5))") end),
+    awful.key({            }, "XF86MonBrightnessDown", function () awful.util.spawn("xbacklight -dec 10") end),
+    --awful.key({            }, "XF86MonBrightnessUp", function () awful.util.spawn_with_shell("sudo backlight $((`backlight`+5))") end),
+    awful.key({            }, "XF86MonBrightnessUp", function () awful.util.spawn_with_shell("xbacklight -inc 10; echo $? >>/tmp/debug") end),
+    
+    
     awful.key({ modkey }, "x",
               function ()
                   awful.prompt.run({ prompt = "Run Lua code: " },
@@ -570,8 +578,12 @@ awful.rules.rules = {
       properties = { tag = tags[1][2] } },
     { rule = { class = "Pidgin" },
       properties = { tag = tags[1][6] } },
-    { rule = { class = "Evince" },
-      properties = { tag = tags[1][5] } },
+      { rule = { class = "Zathura" },
+      properties = { tag = tags[screen.count()][5] } },
+     { rule = { class = "zathura" },
+      properties = { tag = tags[screen.count()][5] } },
+   { rule = { class = "Evince" },
+      properties = { tag = tags[screen.count()][5] } },
     { rule = { class = "Xpdf" },
       properties = { tag = tags[1][5] } },
     { rule = { class = "Eclipse" },
@@ -586,12 +598,12 @@ client.connect_signal("manage", function (c, startup)
     -- awful.titlebar.add(c, { modkey = modkey })
 
     -- Enable sloppy focus
-    c:connect_signal("mouse::enter", function(c)
-        if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-            and awful.client.focus.filter(c) then
-            client.focus = c
-        end
-    end)
+--    c:connect_signal("mouse::enter", function(c)
+--        if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
+--            and awful.client.focus.filter(c) then
+--            client.focus = c
+--       end
+--    end)
 
     if not startup then
         -- Set the windows at the slave,
@@ -612,6 +624,8 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 -- {{{ Autostart
 awful.util.spawn(terminal)
+--awful.util.spawn("xfce4-power-manager")
+--awful.util.spawn("xautolock.sh")
 --awful.util.spawn("pidgin")
 --awful.util.spawn("nautilus --no-desktop")
 --awful.util.spawn("/usr/lib/gnome-settings-daemon/gnome-settings-daemon")
